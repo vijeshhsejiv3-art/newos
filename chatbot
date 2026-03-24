@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066FF;
+            --bg-body: #f0f2f5;
+            --text-main: #1c1e21;
+            --bot-bg: #ffffff;
+            --user-bg: #0066FF;
+            --border: #e4e6eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Main Window */
+        .chat-container {
+            width: 450px;
+            height: 700px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #31a24c;
+            border-radius: 50%;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Message Area */
+        #chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot {
+            align-self: flex-start;
+            background: var(--bot-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 2px;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: var(--user-bg);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* Input Area */
+        .input-box {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover { background: #0052cc; }
+
+        .hint-text {
+            font-size: 11px;
+            color: #8a8d91;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="status-dot"></div>
+        <h2>System Integration Bot</h2>
+    </div>
+    
+    <div id="chat-window">
+        <div class="msg bot">
+            Hello! I am integrated with Google, YouTube, and GitHub. <br><br>
+            <strong>Try these commands:</strong><br>
+            • "search google [topic]"<br>
+            • "find video [topic]"<br>
+            • "get code [topic]"
+        </div>
+    </div>
+
+    <div class="hint-text">Type "help" to see commands again</div>
+    
+    <div class="input-box">
+        <input type="text" id="user-input" placeholder="Enter command..." autocomplete="off">
+        <button id="send-btn">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Function to add messages to UI
+    function addMessage(text, type) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `msg ${type}`;
+        msgDiv.innerHTML = text;
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Main Bot Logic
+    function processInput() {
+        const query = userInput.value.trim();
+        const lowerQuery = query.toLowerCase();
+        
+        if (!query) return;
+
+        addMessage(query, 'user');
+        userInput.value = '';
+
+        setTimeout(() => {
+            // Integration: Google Search
+            if (lowerQuery.startsWith("search google ")) {
+                const term = query.substring(14);
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(term)}`, '_blank');
+                addMessage(`Searching Google for <strong>${term}</strong>...`, 'bot');
+            } 
+            // Integration: YouTube
+            else if (lowerQuery.startsWith("play ")) {
+                const term = query.substring(11);
+                window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(term)}`, '_blank');
+                addMessage(`Opening YouTube results for <strong>${term}</strong>.`, 'bot');
+            }
+            // Integration: GitHub
+            else if (lowerQuery.startsWith("get code ")) {
+                const term = query.substring(9);
+                window.open(`https://github.com/search?q=${encodeURIComponent(term)}`, '_blank');
+                addMessage(`Searching GitHub repositories for <strong>${term}</strong>.`, 'bot');
+            }
+            // Basic Responses
+            else if (lowerQuery === "help") {
+                addMessage("Commands:<br>1. search google [topic]<br>2. find video [topic]<br>3. get code [topic]", 'bot');
+            }
+            else {
+                addMessage("I'm not sure about that. Try: <strong>search google [topic]</strong>", 'bot');
+            }
+        }, 500);
+    }
+
+    // Event Listeners
+    sendBtn.addEventListener('click', processInput);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') processInput();
+    });
+</script>
+
+</body>
+</html>
